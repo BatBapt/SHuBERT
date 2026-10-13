@@ -277,7 +277,7 @@ if __name__ == "__main__":
     video_batches = [fixed_list[i:i + batch_size] for i in range(0, len(fixed_list), batch_size)]
     print(f"length of video_batches: {len(video_batches[0])}")
     for video_file in video_batches[index]:
-        crop_clip_path = f"{output_path}{video_file.split('/')[-1]}"
+        crop_clip_path = f"{output_path}{Path(video_file).stem}.mp4"
         Path(output_path).mkdir(parents=True, exist_ok=True)
         
         current_time = time.time()

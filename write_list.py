@@ -3,9 +3,9 @@ import pickle
 import os
 
 
-input_files_list = os.listdir("path/to/your/input/directory")
+input_files_list = os.listdir("/hpchome/baptiste26/data/RUV/L1_signers/original")
 
-output_path = "path/to/your/output/directory"
+output_path = "/hpchome/baptiste26/data/RUV/L1_signers/cropped"
 os.makedirs(output_path, exist_ok=True)
 
 output_file = os.path.join(output_path, "clips_bbox.list")

@@ -1,29 +1,25 @@
 #!/bin/bash
 
-for i in {0..255}; do
+for i in {0..1}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
+
 #!/bin/bash
 #SBATCH --job-name=crop_$i
-#SBATCH --dependency=singleton
-#SBATCH --partition=
-#SBATCH -G1
+#SBATCH --partition=128cpu_256mem
 #SBATCH --cpus-per-task=1
-#SBATCH --output=/path_to_output_logs_dir/slurm_%x.out
+#SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.out
+#SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.err
 
-CONDA_ROOT=
-env_name=
-
-# loading conda environment
-source \${CONDA_ROOT}/etc/profile.d/conda.sh
-conda activate \$env_name
+source ~/.bashrc
+conda activate feature_extraction
 
 python clips_bbox.py --index "$i" \
     --batch_size 50 \
-    --files_list /path_to_files_list_file/files_list.list \
-    --output_clips_directory /path_to_output_clips_directory \
-    --problem_file_path /path_to_problem_file_directory/problem.txt \
-    --yolo_model_path /path_to_yolo_model_file/yolov8n.pt
+    --files_list /hpchome/baptiste26/data/RUV/L1_signers/cropped/clips_bbox.list \
+    --output_clips_directory /hpchome/baptiste26/data/RUV/L1_signers/cropped \
+    --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped/problem.txt \
+    --yolo_model_path /hpchome/baptiste26/models_weights/yolov8n.pt
 
 EOL
 

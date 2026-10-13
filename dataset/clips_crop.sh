@@ -3,7 +3,6 @@
 for i in {0..1}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
-
 #!/bin/bash
 #SBATCH --job-name=crop_$i
 #SBATCH --partition=128cpu_256mem

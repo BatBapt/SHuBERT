@@ -2,8 +2,10 @@ import gzip
 import pickle
 import os
 
-
-input_files_list = os.listdir("/hpchome/baptiste26/data/RUV/L1_signers/original")
+input_dir = "/hpchome/baptiste26/data/RUV/L1_signers/original"
+input_files_list = sorted(
+    os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.endswith(".mxf")
+)
 
 output_path = "/hpchome/baptiste26/data/RUV/L1_signers/cropped"
 os.makedirs(output_path, exist_ok=True)

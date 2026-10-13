@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {0..1}; do
+for i in {0..5}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash

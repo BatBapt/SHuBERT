@@ -6,7 +6,7 @@ for i in {0..5}; do
 #!/bin/bash
 #SBATCH --job-name=crop_$i
 #SBATCH --partition=128cpu_256mem
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.err
 

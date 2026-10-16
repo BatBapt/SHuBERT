@@ -21,7 +21,7 @@ python kpe_mediapipe.py --index "$i" \
                           --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
                           --stats_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
                           --time_limit 257890 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/cropped/clips_bbox.list \
+                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
                           --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/problem.txt \
                           --face_model_path /hpchome/baptiste26/models_weights/mediapipe/face_landmarker.task \
                           --hand_model_path /hpchome/baptiste26/models_weights/mediapipe/hand_landmarker.task

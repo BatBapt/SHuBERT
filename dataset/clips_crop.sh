@@ -6,8 +6,8 @@ for i in {0..4}; do
 #SBATCH --job-name=crop_$i
 #SBATCH --partition=128cpu_256mem
 #SBATCH --cpus-per-task=16
-#SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.out
-#SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_%x.err
+#SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.out
+#SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.err
 
 source ~/.bashrc
 conda activate feature_extraction

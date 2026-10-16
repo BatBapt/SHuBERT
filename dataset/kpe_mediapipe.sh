@@ -5,10 +5,8 @@ for i in {0..255}; do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=kpe_$i
-#SBATCH --dependency=singleton
-#SBATCH --partition=
-#SBATCH -G1
-#SBATCH --cpus-per-task=1
+#SBATCH --partition=128cpu_256mem
+#SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.err
 

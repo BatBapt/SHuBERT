@@ -15,7 +15,7 @@ conda activate feature_extraction
 
 python crop_face.py --index "$i" \
                           --batch_size 4 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/cropped/clips_bbox.list \
+                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
                           --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/problem.txt \
                           --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
                           --face_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/ \

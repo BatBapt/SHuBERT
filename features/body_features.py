@@ -166,5 +166,5 @@ if __name__ == "__main__":
         if current_time - start_time > time_limit:
             print("Time limit reached. Stopping execution.")
             break
-        # print(pose_file)
+        print(f"Processing file: {pose_file}")
         keypoints_to_numpy(pose_file, pose_emb_path)

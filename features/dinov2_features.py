@@ -153,12 +153,14 @@ if __name__ == "__main__":
     batch_size_in = args.batch_size
     files_list = args.files_list
     output_folder = args.output_folder
-    fixed_list = load_file(files_list)    
+    fixed_list = load_file(files_list)  
+    print(fixed_list)  
     global dino_path
     dino_path = args.dino_path
     
     
     video_batches = [fixed_list[i:i + batch_size_in] for i in range(0, len(fixed_list), batch_size_in)]
+    print(video_batches)
     print(f"Total number of video batches: {len(video_batches)}")
     
     if not os.path.exists(output_folder):

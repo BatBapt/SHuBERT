@@ -5,7 +5,7 @@ for i in {0..4}; do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=crop_hands_$i
-#SBATCH --partition=64cpu_256mem
+#SBATCH --partition=128cpu_256mem
 #SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.err

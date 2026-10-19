@@ -10,7 +10,7 @@ for i in {0..1}; do
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_face_features_%x.err
 
 source ~/.bashrc
-conda activate feature_extraction
+conda activate dino
 
 python dinov2_features.py --index "$i" \
                           --batch_size 20 \

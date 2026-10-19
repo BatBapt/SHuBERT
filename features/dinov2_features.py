@@ -153,7 +153,7 @@ if __name__ == "__main__":
     batch_size_in = args.batch_size
     files_list = args.files_list
     output_folder = args.output_folder
-    fixed_list = load_file(files_list)  
+    fixed_list = load_file(files_list)[0]
     print(fixed_list)  
     global dino_path
     dino_path = args.dino_path

@@ -345,6 +345,7 @@ if __name__ == "__main__":
             continue
         else:
             try:
+                print(f"Processing video: {video_file}")
                 video_holistic(video_file, hand_path, problem_file_path, pose_path)
             except Exception as e:
                 print(f"Error: {e}")

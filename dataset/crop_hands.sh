@@ -1,28 +1,24 @@
 #!/bin/bash
 
-for i in {0..255}; do
+for i in {0..4}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
-#SBATCH --job-name=crophands_$i
-#SBATCH --dependency=singleton
-#SBATCH --partition=
-#SBATCH --cpus-per-task=1
-#SBATCH --output=/path_to_output_logs_dir/slurm_%x.out
+#SBATCH --job-name=crop_hands_$i
+#SBATCH --partition=128cpu_256mem
+#SBATCH --cpus-per-task=16
+#SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.out
+#SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.err
 
-CONDA_ROOT=
-env_name=
-
-# loading conda environment
-source \${CONDA_ROOT}/etc/profile.d/conda.sh
-conda activate \$env_name
+source ~/.bashrc
+conda activate feature_extraction
 
 python crop_hands.py --index "$i" \
-                          --batch_size 50 \
-                          --files_list /path/to/files/list/file/files_list.list \
-                          --problem_file_path /path/to/problem/file/directory/problem.txt \
-                          --pose_path /path/to/pose/file/directory/ \
-                          --hand_path /path/to/hand/file/directory/ \
+                          --batch_size 4 \
+                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
+                          --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_hands/problem.txt \
+                          --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
+                          --hand_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_hands/ \
                           --time_limit 257890
 
 EOL

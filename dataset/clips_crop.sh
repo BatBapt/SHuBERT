@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {0..4}; do
+for i in {0..50}; do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=crop_$i
@@ -12,11 +12,19 @@ for i in {0..4}; do
 source ~/.bashrc
 conda activate feature_extraction
 
+MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
+
+mkdir -p \$MAIN_PATH
+FILE_LIST=\$MAIN_PATH/clips_bbox.list
+
+PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
+touch \$PROBLEM_FILE_PATH
+
 python clips_bbox.py --index "$i" \
     --batch_size 4 \
-    --files_list /hpchome/baptiste26/data/RUV/L1_signers/cropped/clips_bbox.list \
-    --output_clips_directory /hpchome/baptiste26/data/RUV/L1_signers/cropped \
-    --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped/problem.txt \
+    --files_list \$FILE_LIST \
+    --output_clips_directory \$MAIN_PATH \
+    --problem_file_path \$PROBLEM_FILE_PATH \
     --yolo_model_path /hpchome/baptiste26/models_weights/yolov8n.pt
 EOL
 

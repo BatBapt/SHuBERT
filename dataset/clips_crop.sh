@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {0..50}; do
+for i in {0..6}; do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=crop_$i
@@ -21,7 +21,7 @@ PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
 touch \$PROBLEM_FILE_PATH
 
 python clips_bbox.py --index "$i" \
-    --batch_size 4 \
+    --batch_size 20 \
     --files_list \$FILE_LIST \
     --output_clips_directory \$MAIN_PATH \
     --problem_file_path \$PROBLEM_FILE_PATH \

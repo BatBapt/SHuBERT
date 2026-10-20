@@ -38,51 +38,49 @@ def process_sample(model, face_path, left_hand_path, right_hand_path, body_postu
     left_hand_np = np.load(left_hand_path)
     right_hand_np = np.load(right_hand_path)
     body_posture_np = np.load(body_posture_path)
-         
 
     # Same length on all streams, then keep one frame every `stride`
     lengths = [face_np.shape[0], left_hand_np.shape[0], right_hand_np.shape[0], body_posture_np.shape[0]]
     if len(set(lengths)) > 1:
         print(f"Warning: stream lengths differ {lengths} for {face_path}, truncating to {min(lengths)}")
     n = min(lengths)
-    
     face_np = face_np[:n:stride]
     left_hand_np = left_hand_np[:n:stride]
     right_hand_np = right_hand_np[:n:stride]
     body_posture_np = body_posture_np[:n:stride]
+
     face = torch.from_numpy(face_np).float().cuda()
+    left_hand = torch.from_numpy(left_hand_np).float().cuda()
+    right_hand = torch.from_numpy(right_hand_np).float().cuda()
+    body_posture = torch.from_numpy(body_posture_np).float().cuda()
 
     length = face.shape[0]
     # Prepare input
     source = [{
         "face": face,
-        "left_hand": left_hand_np,
-        "right_hand": right_hand_np,
-        "body_posture": body_posture_np,
+        "left_hand": left_hand,
+        "right_hand": right_hand,
+        "body_posture": body_posture,
         # Add dummy labels to match the expected input format
         "label_face": torch.zeros((length, 1)).cuda(),
         "label_left_hand": torch.zeros((length, 1)).cuda(),
         "label_right_hand": torch.zeros((length, 1)).cuda(),
         "label_body_posture": torch.zeros((length, 1)).cuda()
     }]
-    
+
     # Extract features
     with torch.no_grad():
         result = model.extract_features(source, padding_mask=None, kmeans_labels=None, mask=False)
-    
-    
+
     # Extract layer outputs
     layer_outputs = []
     for layer in result['layer_results']:
-        # layer_output has shape [T, B, D]
-        # Since batch size B is 1, we can squeeze it
-        layer_output = layer[-1]
-        layer_output = layer_output.squeeze(1)  # Shape: [T, D]
-        # layer_output = layer_output.squeeze(0)  # Shape: [T, D]
-        layer_outputs.append(layer_output.cpu().numpy())  # Convert to NumPy array
+        # layer_output has shape [T, B, D], B = 1
+        layer_output = layer[-1].squeeze(1)  # Shape: [T, D]
+        layer_outputs.append(layer_output.cpu().numpy())
 
-    # Stack the outputs from all layers to get an array of shape [L, T, D]
-    features = np.stack(layer_outputs, axis=0)  # Shape: [L, T, D]
+    # Stack the outputs from all layers: [L, T, D]
+    features = np.stack(layer_outputs, axis=0)
     return features
 
 # Main script

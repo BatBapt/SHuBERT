@@ -32,7 +32,7 @@ def load_model(checkpoint_path):
 
 
 # Function to process a single sample
-def process_sample(model, face_path, left_hand_path, right_hand_path, body_posture_path):
+def process_sample(model, face_path, left_hand_path, right_hand_path, body_posture_path, stride=2):
     # Load numpy arrays
     face_np = np.load(face_path)
     left_hand_np = np.load(left_hand_path)
@@ -40,18 +40,25 @@ def process_sample(model, face_path, left_hand_path, right_hand_path, body_postu
     body_posture_np = np.load(body_posture_path)
          
 
+    # Same length on all streams, then keep one frame every `stride`
+    lengths = [face_np.shape[0], left_hand_np.shape[0], right_hand_np.shape[0], body_posture_np.shape[0]]
+    if len(set(lengths)) > 1:
+        print(f"Warning: stream lengths differ {lengths} for {face_path}, truncating to {min(lengths)}")
+    n = min(lengths)
+    
+    face_np = face_np[:n:stride]
+    left_hand_np = left_hand_np[:n:stride]
+    right_hand_np = right_hand_np[:n:stride]
+    body_posture_np = body_posture_np[:n:stride]
     face = torch.from_numpy(face_np).float().cuda()
-    left_hand = torch.from_numpy(left_hand_np).float().cuda()
-    right_hand = torch.from_numpy(right_hand_np).float().cuda()
-    body_posture = torch.from_numpy(body_posture_np).float().cuda()
 
     length = face.shape[0]
     # Prepare input
     source = [{
         "face": face,
-        "left_hand": left_hand,
-        "right_hand": right_hand,
-        "body_posture": body_posture,
+        "left_hand": left_hand_np,
+        "right_hand": right_hand_np,
+        "body_posture": body_posture_np,
         # Add dummy labels to match the expected input format
         "label_face": torch.zeros((length, 1)).cuda(),
         "label_left_hand": torch.zeros((length, 1)).cuda(),
@@ -79,7 +86,7 @@ def process_sample(model, face_path, left_hand_path, right_hand_path, body_postu
     return features
 
 # Main script
-def main(csv_list, checkpoint_path, output_dir, index):
+def main(csv_list, checkpoint_path, output_dir, index, stride=2):
     model = load_model(checkpoint_path)
     
     os.makedirs(output_dir, exist_ok=True)
@@ -99,7 +106,7 @@ def main(csv_list, checkpoint_path, output_dir, index):
             continue
         
         # Process the sample
-        features = process_sample(model, face_path, left_hand_path, right_hand_path, body_posture_path)
+        features = process_sample(model, face_path, left_hand_path, right_hand_path, body_posture_path, stride)
 
         np.save(output_path, features)
 
@@ -117,12 +124,16 @@ if __name__ == "__main__":
                         help='directory to save output files')
     parser.add_argument('--batch_size', type=int, required=True,
                         help='batch size for processing')
+    parser.add_argument('--stride', type=int, default=2,
+                        help='stride for downsampling the input sequences')
+    
     args = parser.parse_args()
     index = args.index
     csv_path = args.csv_path
     checkpoint_path = args.checkpoint_path
     output_dir = args.output_dir
     batch_size = int(args.batch_size)
+    stride = int(args.stride)
 
     # make output dir
     os.makedirs(output_dir, exist_ok=True)
@@ -137,4 +148,4 @@ if __name__ == "__main__":
     video_batches = [fixed_list[i:i + batch_size] for i in range(0, len(fixed_list), batch_size)]
     
     csv_list = video_batches[index]
-    main(csv_list, checkpoint_path, output_dir, index)
+    main(csv_list, checkpoint_path, output_dir, index, stride)

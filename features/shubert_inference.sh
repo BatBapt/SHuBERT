@@ -19,13 +19,8 @@ source \${CONDA_ROOT}/etc/profile.d/conda.sh
 conda activate \$env_name
 
 
-
-fairseq_root=SHuBERT/fairseq
-
-
-
 # Ensure fairseq_root is in PYTHONPATH
-export PYTHONPATH=\$PYTHONPATH:\$fairseq_root
+export PYTHONPATH=$PYTHONPATH:/hpchome/baptiste26/my_code/SHuBERT/fairseq
 
 python shubert_inference.py \\
     --index "$i" \\

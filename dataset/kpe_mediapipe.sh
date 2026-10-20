@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {0..20}; do
+for i in {0..6}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
@@ -13,18 +13,23 @@ for i in {0..20}; do
 source ~/.bashrc
 conda activate feature_extraction
 
-# remember to download hand kpe model : wget https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker#models
-# remember to download face kpe model : wget https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker#models
+MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
+
+mkdir -p \$MAIN_PATH
+FILE_LIST=\$MAIN_PATH/cropped.list
+
+PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
+touch \$PROBLEM_FILE_PATH
 
 python kpe_mediapipe.py --index "$i" \
-                          --batch_size 1 \
-                          --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
-                          --stats_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
-                          --time_limit 257890 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
-                          --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/problem.txt \
-                          --face_model_path /hpchome/baptiste26/models_weights/mediapipe/face_landmarker.task \
-                          --hand_model_path /hpchome/baptiste26/models_weights/mediapipe/hand_landmarker.task
+                        --batch_size 20 \
+                        --pose_path \$MAIN_PATH \
+                        --stats_path \$MAIN_PATH \
+                        --files_list \$MAIN_PATH/mediapipe.list \
+                        --problem_file_path \$PROBLEM_FILE_PATH \
+                        --face_model_path /hpchome/baptiste26/models_weights/mediapipe/face_landmarker.task \
+                        --hand_model_path /hpchome/baptiste26/models_weights/mediapipe/hand_landmarker.task \
+                        --time_limit 257890
 EOL
 
     # submit the temporary slurm script

@@ -13,13 +13,21 @@ for i in {0..4}; do
 source ~/.bashrc
 conda activate feature_extraction
 
+MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped_face
+
+mkdir -p \$MAIN_PATH
+FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe/cropped.list
+
+PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
+touch \$PROBLEM_FILE_PATH
+
 python crop_face.py --index "$i" \
-                          --batch_size 4 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
-                          --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/problem.txt \
-                          --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
-                          --face_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/ \
-                          --time_limit 257890
+                    --batch_size 4 \
+                    --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
+                    --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/problem.txt \
+                    --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
+                    --face_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_face/ \
+                    --time_limit 257890
 
 EOL
 

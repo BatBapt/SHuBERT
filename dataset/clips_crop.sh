@@ -2,7 +2,7 @@
 
 python ../wrist_list.py --input_dir /hpchome/baptiste26/data/RUV/news/ruv_original \
     --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/cropped \
-    --output_file_name clips_bbox.list \
+    --output_file_name clips_bbox \
     --ext mp4 || exit 1
 
 for i in {0..6}; do

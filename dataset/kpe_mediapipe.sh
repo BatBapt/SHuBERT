@@ -1,5 +1,10 @@
 #!/bin/bash
 
+python ../wrist_list.py --input_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/cropped \
+    --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
+    --output_file_name cropped.list \
+    --ext mp4 || exit 1
+
 for i in {0..6}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL

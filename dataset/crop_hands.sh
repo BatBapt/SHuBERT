@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {0..4}; do
+for i in {0..6}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
@@ -13,12 +13,20 @@ for i in {0..4}; do
 source ~/.bashrc
 conda activate feature_extraction
 
+MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped_hands
+
+mkdir -p \$MAIN_PATH
+FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe/cropped.list
+
+PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
+touch \$PROBLEM_FILE_PATH
+
 python crop_hands.py --index "$i" \
-                          --batch_size 4 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
-                          --problem_file_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_hands/problem.txt \
+                          --batch_size 20 \
+                          --files_list \$FILE_LIST \
+                          --problem_file_path \$PROBLEM_FILE_PATH \
                           --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
-                          --hand_path /hpchome/baptiste26/data/RUV/L1_signers/cropped_hands/ \
+                          --hand_path \$MAIN_PATH \
                           --time_limit 257890
 
 EOL

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-for i in {0..4}; do
+python ../wrist_list.py --input_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
+    --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/body_features \
+    --output_file_name body_features \
+    --ext _pose.json || exit 1
+
+for i in {0..6}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
@@ -13,12 +18,16 @@ for i in {0..4}; do
 source ~/.bashrc
 conda activate feature_extraction
 
+MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_features
+
+mkdir -p \$MAIN_PATH
+FILE_LIST=\$MAIN_PATH/body_features.list
+
 python body_features.py --index "$i" \
-                          --batch_size 4 \
-                          --files_list /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/clips_bbox.list \
-                          --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
-                          --pose_features_path /hpchome/baptiste26/data/RUV/L1_signers/body_features/ \
-                          --time_limit 257890
+                        --batch_size 20 \
+                        --files_list \$FILE_LIST \
+                        --pose_features_path \$MAIN_PATH \
+                        --time_limit 257890
 
 EOL
 

@@ -39,10 +39,10 @@ def fit_kmeans(feats, n_clusters, seed):
         batch_size=10000,
         tol=0.0,
         max_no_improvement=100,
-        n_init=20,
+        n_init=3,
         reassignment_ratio=0.0,
         random_state=seed,
-        verbose=0,
+        verbose=1,
     )
     km.fit(feats)
     return km

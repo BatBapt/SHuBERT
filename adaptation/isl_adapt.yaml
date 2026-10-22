@@ -1,0 +1,79 @@
+# @package _group_
+# SHuBERT continued pretraining on ISL (adaptation), based on base_random.yaml.
+
+common:
+  fp16: true
+  log_format: json
+  log_interval: 10
+  tensorboard_logdir: tb
+
+checkpoint:
+  restore_file: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/checkpoint_isl_init.pt
+  reset_optimizer: true
+  reset_lr_scheduler: true
+  reset_dataloader: true
+  reset_meters: true
+  save_interval_updates: 200
+  keep_interval_updates: -1
+  no_epoch_checkpoints: true
+  load_checkpoint_on_all_dp_ranks: true
+
+task:
+  _name: audio_pretraining
+  data: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/train.tsv
+  kmeans_label_paths:
+      face: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/labels/train_face.km
+      left_hand: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/labels/train_left_hand.km
+      right_hand: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/labels/train_right_hand.km
+      body_posture: /hpchome/baptiste26/data/RUV/L1_signers/shubert_adapation/labels/train_body_posture.km
+  max_sample_size: 1500
+  min_sample_size: 1
+  normalize: true
+  sample_rate: 1
+
+dataset:
+  num_workers: 4
+  max_tokens: 15000
+  skip_invalid_size_inputs_valid_test: true
+  required_batch_size_multiple: 1
+  disable_validation: true
+
+distributed_training:
+  distributed_world_size: 1
+  ddp_backend: legacy_ddp
+
+criterion:
+  _name: model
+
+optimization:
+  max_update: 2000
+  lr: [0.00005]
+
+optimizer:
+  _name: adam
+  adam_betas: (0.9,0.98)
+  adam_eps: 1e-06
+  weight_decay: 0.01
+
+lr_scheduler:
+  _name: polynomial_decay
+  warmup_updates: 200
+
+# Same architecture as the pretrained model: do not change
+model:
+  _name: shubert
+  extractor_mode: layer_norm
+  encoder_layerdrop: 0.05
+  dropout_input: 0.0
+  dropout_features: 0.0
+  feature_grad_mult: 1.0
+  encoder_embed_dim: 768
+  codebook_size: 256
+  mask_prob: 0.8
+  mask_length: 3
+  require_same_masks: true
+  mask_dropout: 0
+  channels_embed_dim: 384
+  channels_pose_embed_dim: 14
+  intermediate_dim: 1024
+  mask_strategy: random

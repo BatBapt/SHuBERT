@@ -22,7 +22,7 @@ case "$MODE" in
 esac
 
 python ../write_list.py --input_dir $INPUT_DIR \
-    --output_dir $MAIN_PATH \
+    --output_path $MAIN_PATH \
     --output_file_name clips_bbox \
     --ext $EXT || exit 1
 

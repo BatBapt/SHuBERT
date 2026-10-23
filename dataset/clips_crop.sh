@@ -7,13 +7,13 @@ case "$MODE" in
         INPUT_DIR=/hpchome/baptiste26/data/RUV/news/ruv_original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
         EXT=mp4
-        N_JOBS=7
+        N_JOBS=6
         ;;
     L1)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped
         EXT=mxf
-        N_JOBS=1
+        N_JOBS=6
         ;;
     *)
         echo "Usage: $0 {news|L1}"

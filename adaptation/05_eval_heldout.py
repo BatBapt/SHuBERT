@@ -8,7 +8,9 @@ Masked cluster prediction with a fixed mask (same seed for every model):
                 -> fair base vs adapted comparison.
 
 Run from <repo>/fairseq with PYTHONPATH=<repo>/fairseq
-Outputs in out_dir: heldout_eval.csv, heldout_eval.png
+Outputs in out_dir: heldout_eval.csv, heldout_eval.png (mean of the 4 streams),
+                    heldout_streams.csv, heldout_streams.png (per stream)
+Use --from_csv heldout_eval.csv to redo the tables and plots without recomputing.
 """
 import argparse
 import csv
@@ -127,10 +129,9 @@ def list_models(base_ckpt, ckpt_dir):
     return sorted(models, key=lambda x: x[1])
 
 
-def main(args):
+def run_eval(args, out_dir):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    data_dir, out_dir = Path(args.data_dir), Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    data_dir = Path(args.data_dir)
     tr_videos, tr_labels = read_split(data_dir, "train")
     ho_videos, ho_labels = read_split(data_dir, "heldout")
     print(f"{len(tr_videos)} train videos, {len(ho_videos)} held-out videos, device {device}")
@@ -162,26 +163,79 @@ def main(args):
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
+    return rows
 
-    # Plots (mean over the 4 streams)
-    def series(heads, split, key):
-        pts = [(r["update"], r[key]) for r in rows
-               if r["heads"] == heads and r["split"] == split and r["stream"] == "mean" and r["model"] != "base"]
-        return [p[0] for p in pts], [p[1] for p in pts]
 
-    base_fresh = [r for r in rows if r["model"] == "base" and r["stream"] == "mean"][0]
+def load_rows(path):
+    rows = []
+    with open(path) as f:
+        for r in csv.DictReader(f):
+            r["update"], r["loss"], r["acc"] = int(r["update"]), float(r["loss"]), float(r["acc"])
+            rows.append(r)
+    return rows
+
+
+def series(rows, heads, split, key, stream="mean"):
+    pts = sorted((r["update"], r[key]) for r in rows
+                 if r["heads"] == heads and r["split"] == split and r["stream"] == stream and r["model"] != "base")
+    return [p[0] for p in pts], [p[1] for p in pts]
+
+
+def base_value(rows, key, stream="mean"):
+    return [r[key] for r in rows if r["model"] == "base" and r["heads"] == "fresh" and r["stream"] == stream][0]
+
+
+def report_streams(rows, out_dir):
+    """Per-stream table (fresh heads, held-out): base vs best and last adapted checkpoint."""
+    fresh = [r for r in rows if r["heads"] == "fresh" and r["split"] == "heldout" and r["model"] != "base"]
+    best = max((r for r in fresh if r["stream"] == "mean"), key=lambda r: r["acc"])
+    last = max((r for r in fresh if r["stream"] == "mean"), key=lambda r: r["update"])
+
+    lines = []
+    header = f"{'stream':14s} {'base acc':>9s} {'best acc':>9s} {'last acc':>9s} {'d_last':>8s} {'base loss':>10s} {'last loss':>10s} {'d_loss':>8s}"
+    print(f"\nPer stream, fresh heads, held-out (best = {best['model']}, last = {last['model']})")
+    print(header)
+    for s in STREAMS + ["mean"]:
+        get = lambda name, key: [r[key] for r in fresh if r["model"] == name and r["stream"] == s][0]
+        b_acc, b_loss = base_value(rows, "acc", s), base_value(rows, "loss", s)
+        bst, l_acc, l_loss = get(best["model"], "acc"), get(last["model"], "acc"), get(last["model"], "loss")
+        print(f"{s:14s} {b_acc:9.3f} {bst:9.3f} {l_acc:9.3f} {l_acc - b_acc:+8.3f} {b_loss:10.3f} {l_loss:10.3f} {l_loss - b_loss:+8.3f}")
+        lines.append({"stream": s, "base_acc": b_acc, "best_acc": bst, "last_acc": l_acc, "delta_acc": round(l_acc - b_acc, 4),
+                      "base_loss": b_loss, "last_loss": l_loss, "delta_loss": round(l_loss - b_loss, 4)})
+
+    with open(out_dir / "heldout_streams.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(lines[0].keys()))
+        w.writeheader()
+        w.writerows(lines)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    for ax, s in zip(axes.flat, STREAMS):
+        ax.plot(*series(rows, "fresh", "heldout", "acc", s), "o-", label="adapted (fresh heads)")
+        ax.plot(*series(rows, "own", "heldout", "acc", s), "s--", alpha=0.6, label="adapted (own heads)")
+        ax.axhline(base_value(rows, "acc", s), color="gray", ls="--", label="base (fresh heads)")
+        ax.set_title(f"{s}: held-out accuracy")
+        ax.set_xlabel("updates")
+        ax.grid(alpha=0.3)
+    axes.flat[0].legend()
+    fig.tight_layout()
+    fig.savefig(out_dir / "heldout_streams.png", dpi=120)
+    print(f"Saved {out_dir / 'heldout_streams.csv'} and {out_dir / 'heldout_streams.png'}")
+
+
+def plot_summary(rows, out_dir):
+    """Mean over the 4 streams."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
     ax = axes[0]
-    ax.plot(*series("own", "train", "loss"), "o-", label="own heads - train")
-    ax.plot(*series("own", "heldout", "loss"), "o-", label="own heads - held-out")
+    ax.plot(*series(rows, "own", "train", "loss"), "o-", label="own heads - train")
+    ax.plot(*series(rows, "own", "heldout", "loss"), "o-", label="own heads - held-out")
     ax.set_title("Adapted checkpoints: masked prediction loss")
     ax.set_xlabel("updates")
     ax.set_ylabel("cross-entropy (nats)")
     ax.legend()
     ax.grid(alpha=0.3)
     ax = axes[1]
-    ax.plot(*series("fresh", "heldout", "acc"), "o-", label="adapted (fresh heads)")
-    ax.axhline(base_fresh["acc"], color="gray", ls="--", label="base (fresh heads)")
+    ax.plot(*series(rows, "fresh", "heldout", "acc"), "o-", label="adapted (fresh heads)")
+    ax.axhline(base_value(rows, "acc"), color="gray", ls="--", label="base (fresh heads)")
     ax.axhline(1 / N_CLUSTERS, color="red", ls=":", label="chance")
     ax.set_title("Held-out accuracy, fresh heads: base vs adapted")
     ax.set_xlabel("updates")
@@ -190,14 +244,29 @@ def main(args):
     ax.grid(alpha=0.3)
     fig.tight_layout()
     fig.savefig(out_dir / "heldout_eval.png", dpi=120)
-    print(f"\nSaved {out_dir / 'heldout_eval.csv'} and {out_dir / 'heldout_eval.png'}")
+    print(f"\nSaved {out_dir / 'heldout_eval.png'}")
+
+
+def main(args):
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if args.from_csv:
+        rows = load_rows(args.from_csv)
+        print(f"Loaded {len(rows)} rows from {args.from_csv} (no recomputation)")
+    else:
+        if not (args.data_dir and args.ckpt_dir and args.base_ckpt):
+            raise SystemExit("--data_dir, --ckpt_dir and --base_ckpt are required without --from_csv")
+        rows = run_eval(args, out_dir)
+    plot_summary(rows, out_dir)
+    report_streams(rows, out_dir)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", required=True, help="dir with train.tsv, heldout.tsv, labels/")
-    parser.add_argument("--ckpt_dir", required=True, help="run_1/ckpt")
-    parser.add_argument("--base_ckpt", required=True, help="checkpoint_836_400000.pt")
+    parser.add_argument("--from_csv", default=None, help="existing heldout_eval.csv: only redo tables and plots")
+    parser.add_argument("--data_dir", help="dir with train.tsv, heldout.tsv, labels/")
+    parser.add_argument("--ckpt_dir", help="run_1/ckpt")
+    parser.add_argument("--base_ckpt", help="checkpoint_836_400000.pt")
     parser.add_argument("--out_dir", required=True)
     parser.add_argument("--chunk", type=int, default=1500, help="frames per forward pass (= max_sample_size)")
     parser.add_argument("--fresh_epochs", type=int, default=20)

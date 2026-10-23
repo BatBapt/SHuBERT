@@ -1,14 +1,35 @@
 #!/bin/bash
 
-python ../wrist_list.py --input_dir /hpchome/baptiste26/data/RUV/news/ruv_original \
-    --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/cropped \
-    --output_file_name clips_bbox \
-    --ext mp4 || exit 1
+MODE=$1
 
-for i in {0..6}; do
+case "$MODE" in
+    news)
+        INPUT_DIR=/hpchome/baptiste26/data/RUV/news/ruv_original
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
+        EXT=mp4
+        N_JOBS=7
+        ;;
+    L1)
+        INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/original
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped
+        EXT=mxf
+        N_JOBS=1
+        ;;
+    *)
+        echo "Usage: $0 {news|L1}"
+        exit 1
+        ;;
+esac
+
+python ../wrist_list.py --input_dir $INPUT_DIR \
+    --output_dir $MAIN_PATH \
+    --output_file_name clips_bbox \
+    --ext $EXT || exit 1
+
+for i in $(seq 0 $((N_JOBS - 1))); do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
-#SBATCH --job-name=crop_$i
+#SBATCH --job-name=crop_${MODE}_$i
 #SBATCH --partition=128cpu_256mem
 #SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.out
@@ -17,19 +38,14 @@ for i in {0..6}; do
 source ~/.bashrc
 conda activate feature_extraction
 
-MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
-
-mkdir -p \$MAIN_PATH
-FILE_LIST=\$MAIN_PATH/clips_bbox.list
-
-PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
-touch \$PROBLEM_FILE_PATH
+mkdir -p $MAIN_PATH
+touch $MAIN_PATH/problem.txt
 
 python clips_bbox.py --index "$i" \
     --batch_size 20 \
-    --files_list \$FILE_LIST \
-    --output_clips_directory \$MAIN_PATH \
-    --problem_file_path \$PROBLEM_FILE_PATH \
+    --files_list $MAIN_PATH/clips_bbox.list \
+    --output_clips_directory $MAIN_PATH \
+    --problem_file_path $MAIN_PATH/problem.txt \
     --yolo_model_path /hpchome/baptiste26/models_weights/yolov8n.pt
 EOL
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 python ../write_list.py --input_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/cropped \
-    --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
+    --output_path /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
     --output_file_name cropped \
     --ext mp4 || exit 1
 

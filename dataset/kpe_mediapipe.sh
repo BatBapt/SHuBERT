@@ -1,15 +1,33 @@
 #!/bin/bash
 
-python ../write_list.py --input_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/cropped \
-    --output_path /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
+MODE=$1
+
+case "$MODE" in
+    news)
+        INPUT_DIR=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
+        N_JOBS=7
+        ;;
+    L1)
+        INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/cropped
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
+        N_JOBS=3
+        ;;
+    *)
+        echo "Usage: $0 {news|L1}"
+        exit 1
+        ;;
+esac
+
+python ../write_list.py --input_dir $INPUT_DIR \
+    --output_path $MAIN_PATH \
     --output_file_name cropped \
     --ext mp4 || exit 1
 
-for i in {0..6}; do
-    # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
+for i in $(seq 0 $((N_JOBS - 1))); do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
-#SBATCH --job-name=kpe_$i
+#SBATCH --job-name=kpe_${MODE}_$i
 #SBATCH --partition=128cpu_256mem
 #SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.out
@@ -18,30 +36,20 @@ for i in {0..6}; do
 source ~/.bashrc
 conda activate feature_extraction
 
-MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
-
-mkdir -p \$MAIN_PATH
-FILE_LIST=\$MAIN_PATH/cropped.list
-
-PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
-touch \$PROBLEM_FILE_PATH
+mkdir -p $MAIN_PATH
+touch $MAIN_PATH/problem.txt
 
 python kpe_mediapipe.py --index "$i" \
                         --batch_size 20 \
-                        --pose_path \$MAIN_PATH \
-                        --stats_path \$MAIN_PATH \
-                        --files_list \$MAIN_PATH/mediapipe.list \
-                        --problem_file_path \$PROBLEM_FILE_PATH \
+                        --pose_path $MAIN_PATH \
+                        --stats_path $MAIN_PATH \
+                        --files_list $MAIN_PATH/cropped.list \
+                        --problem_file_path $MAIN_PATH/problem.txt \
                         --face_model_path /hpchome/baptiste26/models_weights/mediapipe/face_landmarker.task \
                         --hand_model_path /hpchome/baptiste26/models_weights/mediapipe/hand_landmarker.task \
                         --time_limit 257890
 EOL
 
-    # submit the temporary slurm script
     sbatch temp_slurm_script_$i.sh
-
-    # remove the temporary slurm script
     rm temp_slurm_script_$i.sh
 done
-
-

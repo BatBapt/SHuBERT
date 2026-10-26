@@ -17,7 +17,7 @@ case "$MODE" in
         ;;
 esac
 
-for i in {0..$((N_JOBS-1))}; do
+for i in $(seq 0 $((N_JOBS - 1))); do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash

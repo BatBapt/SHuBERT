@@ -39,12 +39,12 @@ for i in {0..6}; do
 source ~/.bashrc
 conda activate feature_extraction
 
-mkdir -p \$MAIN_PATH
+mkdir -p $MAIN_PATH
 
 python body_features.py --index "$i" \
                         --batch_size 20 \
-                        --files_list \$FILE_LIST \
-                        --pose_features_path \$MAIN_PATH \
+                        --files_list $FILE_LIST \
+                        --pose_features_path $MAIN_PATH \
                         --time_limit 257890
 
 EOL

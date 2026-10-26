@@ -37,12 +37,12 @@ for i in {0..1}; do
 source ~/.bashrc
 conda activate dino
 
-mkdir -p \$MAIN_PATH
+mkdir -p $MAIN_PATH
 
 python dinov2_features.py --index "$i" \
                           --batch_size 5000 \
-                          --files_list $\FILE_LIST \
-                          --output_folder $\MAIN_PATH/ \
+                          --files_list $FILE_LIST \
+                          --output_folder $MAIN_PATH/ \
                           --dino_path /hpchome/baptiste26/models_weights/shubert_weights/hands_dinov2_checkpoint.pth \
                           --time_limit 257890
 

@@ -1,7 +1,28 @@
 #!/bin/bash
 
-python ../wrist_list.py --input_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe \
-    --output_dir /hpchome/baptiste26/data/RUV/news/SHuBERT/body_features \
+MODE=$1
+
+case "$MODE" in
+    news)
+        POSE_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_feature
+        FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_feature/body_features.list
+        N_JOBS=7
+        ;;
+    L1)
+        POSE_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/body_feature
+        FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/body_feature/body_features.list
+        N_JOBS=3
+        ;;
+    *)
+        echo "Usage: $0 {news|L1}"
+        exit 1
+        ;;
+esac
+
+python ../wrist_list.py --input_dir $POSE_PATH \
+    --output_dir $MAIN_PATH \
     --output_file_name body_features \
     --ext _pose.json || exit 1
 
@@ -18,10 +39,7 @@ for i in {0..6}; do
 source ~/.bashrc
 conda activate feature_extraction
 
-MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_features
-
 mkdir -p \$MAIN_PATH
-FILE_LIST=\$MAIN_PATH/body_features.list
 
 python body_features.py --index "$i" \
                         --batch_size 20 \
@@ -31,10 +49,7 @@ python body_features.py --index "$i" \
 
 EOL
 
-    # submit the temporary slurm script
     sbatch temp_slurm_script_$i.sh
-
-    # remove the temporary slurm script
     rm temp_slurm_script_$i.sh
 done
 

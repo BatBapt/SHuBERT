@@ -5,14 +5,14 @@ MODE=$1
 case "$MODE" in
     news)
         POSE_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
-        MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_feature
-        FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_feature/body_features.list
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_features
+        FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/body_features/body_features.list
         N_JOBS=7
         ;;
     L1)
         POSE_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
-        MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/body_feature
-        FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/body_feature/body_features.list
+        MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/body_features
+        FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/body_features/body_features.list
         N_JOBS=3
         ;;
     *)

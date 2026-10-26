@@ -5,10 +5,12 @@ MODE=$1
 case "$MODE" in
     news)
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped_face
+        FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe/cropped.list
         N_JOBS=7
         ;;
     L1)
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped_face
+        FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe/cropped.list
         N_JOBS=3
         ;;
     *)
@@ -31,7 +33,6 @@ source ~/.bashrc
 conda activate feature_extraction
 
 mkdir -p \$MAIN_PATH
-FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe/cropped.list
 
 PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
 touch \$PROBLEM_FILE_PATH

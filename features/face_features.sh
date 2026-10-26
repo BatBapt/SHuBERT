@@ -19,7 +19,7 @@ case "$MODE" in
         ;;
 esac
 
-python ../wrist_list.py --input_dir $POSE_PATH \
+python ../write_list.py --input_dir $POSE_PATH \
     --output_dir $MAIN_PATH \
     --output_file_name face_features \
     --ext .mp4 || exit 1

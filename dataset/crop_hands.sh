@@ -4,11 +4,13 @@ MODE=$1
 
 case "$MODE" in
     news)
+        POSE_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped_hands
         FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe/cropped.list
         N_JOBS=7
         ;;
     L1)
+        POSE_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped_hands
         FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe/cropped.list
         N_JOBS=3
@@ -41,7 +43,7 @@ python crop_hands.py --index "$i" \
                     --batch_size 20 \
                     --files_list \$FILE_LIST \
                     --problem_file_path \$PROBLEM_FILE_PATH \
-                    --pose_path /hpchome/baptiste26/data/RUV/L1_signers/mediapipe/ \
+                    --pose_path \$POSE_PATH \
                     --hand_path \$MAIN_PATH \
                     --time_limit 257890
 

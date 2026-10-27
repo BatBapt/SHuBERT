@@ -2,7 +2,6 @@
 #SBATCH --job-name=adapting_shubert
 #SBATCH --partition=gpu-1xA100
 #SBATCH --cpus-per-task=16
-#SBATCH --cpus-per-task=16
 #SBATCH --time=5:00:00
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/adapting_shubert_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/adapting_shubert_%x.err

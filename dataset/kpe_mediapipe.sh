@@ -6,8 +6,8 @@ case "$MODE" in
     news)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
-        N_JOBS=120
-        BATCH_SIZE=1
+        N_JOBS=60
+        BATCH_SIZE=2
         ;;
     L1)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/cropped

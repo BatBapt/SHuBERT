@@ -41,7 +41,7 @@ conda activate feature_extraction
 mkdir -p $MAIN_PATH
 touch $MAIN_PATH/problem.txt
 
-for k in $(seq 0 $((BATCH_SIZE - 1))); do
+for k in \$(seq 0 $((BATCH_SIZE - 1))); do
   python kpe_mediapipe.py --index \$(($BATCH_SIZE*$i + k)) \\ \\
                           --batch_size 1 \\
                           --pose_path $MAIN_PATH \\

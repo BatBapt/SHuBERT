@@ -42,7 +42,7 @@ mkdir -p $MAIN_PATH
 touch $MAIN_PATH/problem.txt
 
 for k in \$(seq 0 $((BATCH_SIZE - 1))); do
-  python kpe_mediapipe.py --index \$(($BATCH_SIZE*$i + k)) \\ \\
+  python kpe_mediapipe.py --index \$(($BATCH_SIZE*$i + k)) \\
                           --batch_size 1 \\
                           --pose_path $MAIN_PATH \\
                           --stats_path $MAIN_PATH \\
@@ -54,6 +54,6 @@ for k in \$(seq 0 $((BATCH_SIZE - 1))); do
 done
 wait
 EOL
-    # sbatch temp_slurm_script_$i.sh
-    # rm temp_slurm_script_$i.sh
+    sbatch temp_slurm_script_$i.sh
+    rm temp_slurm_script_$i.sh
 done

@@ -7,13 +7,15 @@ case "$MODE" in
         POSE_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped_hands
         FILE_LIST=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe/cropped.list
-        N_JOBS=7
+        N_JOBS=60
+        BATCH_SIZE=2
         ;;
     L1)
         POSE_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped_hands
         FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe/cropped.list
         N_JOBS=3
+        BATCH_SIZE=20
         ;;
     *)
         echo "Usage: $0 {news|L1}"
@@ -26,8 +28,8 @@ for i in $(seq 0 $((N_JOBS - 1))); do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=crop_hands_$i
-#SBATCH --partition=128cpu_256mem
-#SBATCH --cpus-per-task=16
+#SBATCH --partition=48cpu_192mem
+#SBATCH --cpus-per-task=$((2 * BATCH_SIZE))
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_hands_%x.err
 
@@ -36,23 +38,20 @@ conda activate feature_extraction
 
 mkdir -p \$MAIN_PATH
 
-PROBLEM_FILE_PATH=\$MAIN_PATH/problem.txt
-touch \$PROBLEM_FILE_PATH
+mkdir -p $MAIN_PATH
+touch $MAIN_PATH/problem.txt
 
-python crop_hands.py --index "$i" \
-                    --batch_size 20 \
-                    --files_list \$FILE_LIST \
-                    --problem_file_path \$PROBLEM_FILE_PATH \
-                    --pose_path \$POSE_PATH \
-                    --hand_path \$MAIN_PATH \
-                    --time_limit 257890
+for k in \$(seq 0 $((BATCH_SIZE - 1))); do
+  python crop_hands.py --index \$(($BATCH_SIZE*$i + k)) \\
+                        --batch_size 1 \
+                        --files_list $FILE_LIST \
+                        --problem_file_path $MAIN_PATH/problem.txt \
+                        --pose_path $POSE_PATH \
+                        --hand_path $MAIN_PATH \
+                        --time_limit 257890
 
 EOL
-
-    # submit the temporary slurm script
     sbatch temp_slurm_script_$i.sh
-
-    # remove the temporary slurm script
     rm temp_slurm_script_$i.sh
 done
 

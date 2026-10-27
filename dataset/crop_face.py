@@ -261,7 +261,7 @@ def video_holistic(video_file, face_path, problem_file_path, pose_path):
 
     for i in range(len(video)):
         frame = video[i].asnumpy()
-        video.seek(0)
+        # video.seek(0)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         if result_dict[str(i)] is None: # no pose_landmarks detected

@@ -6,12 +6,14 @@ case "$MODE" in
     news)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/mediapipe
-        N_JOBS=7
+        N_JOBS=120
+        BATCH_SIZE=1
         ;;
     L1)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/cropped
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
         N_JOBS=3
+        BATCH_SIZE=20
         ;;
     *)
         echo "Usage: $0 {news|L1}"
@@ -28,7 +30,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=kpe_${MODE}_$i
-#SBATCH --partition=128cpu_256mem
+#SBATCH --partition=48cpu_192mem
 #SBATCH --cpus-per-task=16
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.err
@@ -40,7 +42,7 @@ mkdir -p $MAIN_PATH
 touch $MAIN_PATH/problem.txt
 
 python kpe_mediapipe.py --index "$i" \
-                        --batch_size 20 \
+                        --batch_size $BATCH_SIZE \
                         --pose_path $MAIN_PATH \
                         --stats_path $MAIN_PATH \
                         --files_list $MAIN_PATH/cropped.list \

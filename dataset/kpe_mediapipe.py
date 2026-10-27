@@ -155,7 +155,7 @@ def video_holistic(video_file, problem_file_path, pose_path, stats_path):
     for i in range(len(video)):        
         try:
             frame_rgb = video[i].asnumpy() # it is actually bgr here
-            video.seek(0)
+            # video.seek(0)
             bounding_boxes, result_dict[i] = detect_holistic(frame_rgb)
         except Exception as e:
             print(f"Error: {e}")

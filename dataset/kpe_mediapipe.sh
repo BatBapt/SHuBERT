@@ -54,7 +54,6 @@ for k in \$(seq 0 $((BATCH_SIZE - 1))); do
 done
 wait
 EOL
-
-    sbatch temp_slurm_script_$i.sh
-    rm temp_slurm_script_$i.sh
+    # sbatch temp_slurm_script_$i.sh
+    # rm temp_slurm_script_$i.sh
 done

@@ -34,7 +34,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 #!/bin/bash
 #SBATCH --job-name=body_features_$i
 #SBATCH --partition=48cpu_192mem
-#SBATCH --cpus-per-task=$((2 * BATCH_SIZE))
+#SBATCH --cpus-per-task=1
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_body_features_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_body_features_%x.err
 

@@ -41,13 +41,14 @@ touch $MAIN_PATH/problem.txt
 
 for k in \$(seq 0 $((BATCH_SIZE - 1))); do
   python crop_hands.py --index \$(($BATCH_SIZE*$i + k)) \\
-                        --batch_size 1 \
-                        --files_list $FILE_LIST \
-                        --problem_file_path $MAIN_PATH/problem.txt \
-                        --pose_path $POSE_PATH \
-                        --hand_path $MAIN_PATH \
-                        --time_limit 257890
-
+                        --batch_size 1 \\
+                        --files_list $FILE_LIST \\
+                        --problem_file_path $MAIN_PATH/problem.txt \\
+                        --pose_path $POSE_PATH \\
+                        --hand_path $MAIN_PATH \\
+                        --time_limit 257890 &
+done
+wait
 EOL
     sbatch temp_slurm_script_$i.sh
     rm temp_slurm_script_$i.sh

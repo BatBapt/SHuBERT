@@ -101,7 +101,7 @@ def keypoints_to_numpy(pose_file, pose_emb_path):
             if prev_pose is not None:
                 frame_pose_landmarks = prev_pose
             else:
-                frame_pose_landmarks = np.full((7,2), -9999)
+                frame_pose_landmarks = np.full((7,2), -9999).flatten()
         elif result_dict[str(i)]['pose_landmarks'] is not None:
             frame_pose_landmarks = result_dict[str(i)]['pose_landmarks'][0]
             #select only the points at some specifice indices 

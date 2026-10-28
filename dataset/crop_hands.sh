@@ -36,8 +36,6 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 source ~/.bashrc
 conda activate feature_extraction
 
-mkdir -p \$MAIN_PATH
-
 mkdir -p $MAIN_PATH
 touch $MAIN_PATH/problem.txt
 

@@ -7,13 +7,15 @@ case "$MODE" in
         INPUT_DIR=/hpchome/baptiste26/data/RUV/news/ruv_original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/cropped
         EXT=mp4
-        N_JOBS=6
+        N_JOBS=60
+        BATCH_SIZE=2
         ;;
     L1)
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped
         EXT=mxf
-        N_JOBS=6
+        N_JOBS=3
+        BATCH_SIZE=20
         ;;
     *)
         echo "Usage: $0 {news|L1}"
@@ -30,8 +32,8 @@ for i in $(seq 0 $((N_JOBS - 1))); do
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash
 #SBATCH --job-name=crop_${MODE}_$i
-#SBATCH --partition=128cpu_256mem
-#SBATCH --cpus-per-task=16
+#SBATCH --partition=48cpu_192mem
+#SBATCH --cpus-per-task=4
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.err
 
@@ -41,14 +43,16 @@ conda activate feature_extraction
 mkdir -p $MAIN_PATH
 touch $MAIN_PATH/problem.txt
 
-python clips_bbox.py --index "$i" \
-    --batch_size 20 \
-    --files_list $MAIN_PATH/clips_bbox.list \
-    --output_clips_directory $MAIN_PATH \
-    --problem_file_path $MAIN_PATH/problem.txt \
-    --yolo_model_path /hpchome/baptiste26/models_weights/yolov8n.pt
+for k in \$(seq 0 $((BATCH_SIZE - 1))); do
+  python clips_bbox.py --index \$(($BATCH_SIZE*$i + k)) \\
+                        --batch_size 1 \\
+                        --files_list $MAIN_PATH/clips_bbox.list \\
+                        --output_clips_directory $MAIN_PATH \\
+                        --problem_file_path $MAIN_PATH/problem.txt \\
+                        --yolo_model_path /hpchome/baptiste26/models_weights/yolov8n.pt &
+done
+wait
 EOL
-
     sbatch temp_slurm_script_$i.sh
     rm temp_slurm_script_$i.sh
 done

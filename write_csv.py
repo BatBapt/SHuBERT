@@ -25,4 +25,3 @@ if __name__ == "__main__":
                 print("Missing:", missing)
                 continue
             f.write("\t".join(paths) + "\n")
-            exit()

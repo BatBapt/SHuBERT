@@ -24,7 +24,7 @@ python ../write_list.py --input_dir $POSE_PATH \
     --output_file_name hands_features \
     --ext .mp4 || exit 1
 
-for i in {0..1}; do
+for i in {0..0}; do
     # adjust to the number of cpus/gpus you have. the goal is to download in parallel.
     cat >temp_slurm_script_$i.sh <<EOL
 #!/bin/bash

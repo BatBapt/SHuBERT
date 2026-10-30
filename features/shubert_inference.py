@@ -24,7 +24,10 @@ def load_model(checkpoint_path):
         state_dict = checkpoint
     
     # Load the state dictionary into the model
-    model.load_state_dict(state_dict, strict=False)
+    res = model.load_state_dict(state_dict, strict=False)
+    print(f"[load] missing: {len(res.missing_keys)}  unexpected: {len(res.unexpected_keys)}")
+    print("[load] first missing:", res.missing_keys[:5])
+    print("[load] first unexpected:", res.unexpected_keys[:5])
     
     model.eval()
     model.cuda()  # Move to GPU if available

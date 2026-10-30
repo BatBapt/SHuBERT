@@ -32,7 +32,7 @@ for i in {0..0}; do
 #SBATCH --partition=gpu-1xA100
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_hands_features_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_hands_features_%x.err
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 
 source ~/.bashrc
 conda activate dino

@@ -106,8 +106,8 @@ def main(csv_list, checkpoint_path, output_dir, index, stride=2):
         # Process the sample
         features = process_sample(model, face_path, left_hand_path, right_hand_path, body_posture_path, stride)
 
-        np.save(output_path, features)
-
+        # np.save(output_path, features)
+        np.save(output_path, np.asarray(features, dtype=np.float16))
         
 
 if __name__ == "__main__":

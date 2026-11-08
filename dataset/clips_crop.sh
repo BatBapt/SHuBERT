@@ -14,7 +14,7 @@ case "$MODE" in
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped
         EXT=mxf
-        N_JOBS=3
+        N_JOBS=5
         BATCH_SIZE=20
         ;;
     *)

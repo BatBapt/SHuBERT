@@ -14,8 +14,8 @@ case "$MODE" in
         INPUT_DIR=/hpchome/baptiste26/data/RUV/L1_signers/original
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/cropped
         EXT=mxf
-        N_JOBS=5
-        BATCH_SIZE=20
+        N_JOBS=50
+        BATCH_SIZE=2
         ;;
     *)
         echo "Usage: $0 {news|L1}"

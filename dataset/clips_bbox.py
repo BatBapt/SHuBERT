@@ -236,7 +236,7 @@ def crop_clip(video_path, problem_file_path, crop_clip_path, yolo_model_path):
         
     except Exception as e:
         with open(problem_file_path, "a") as f:
-            f.write(f"{video_path}\n")
+            f.write(f"{video_path}: {e}\n")
         # pass
         
 

@@ -33,7 +33,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 #!/bin/bash
 #SBATCH --job-name=crop_${MODE}_$i
 #SBATCH --partition=48cpu_192mem
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_crops_%x.err
 

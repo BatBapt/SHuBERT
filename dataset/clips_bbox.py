@@ -66,23 +66,38 @@ def long_side_rescale(target_length, width, height):
     return int(new_width), int(new_height)
 
 
-def get_optical_flow(images):
+def motion_magnitude(prv_gray, frame):
+    # Same computation as the original get_optical_flow, for a single frame
+    cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray_size = (int(frame.shape[1] * 0.5), int(frame.shape[0] * 0.5))
+    cur_gray = cv2.resize(cur_gray, gray_size)
+    if prv_gray is not None:
+        flow = cv2.calcOpticalFlowFarneback(prv_gray, cur_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+        mag, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+        mag = (255.0*(mag-mag.min())/max(float(mag.max()-mag.min()), 1)).astype(np.uint8)
+        mag = cv2.resize(mag, (frame.shape[1], frame.shape[0]))
+    else:
+        mag = np.zeros((frame.shape[0], frame.shape[1]), dtype=np.uint8)
+    return mag, cur_gray
+
+
+def add_box_motions(video_path, bboxes):
+    # Append the mean motion inside each box as a 5th element, frame by frame
+    cap = cv2.VideoCapture(video_path)
     prv_gray = None
-    motion_mags = []
-    for frame in images:
-        cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray_size = (int(frame.shape[1] * 0.5), int(frame.shape[0] * 0.5))
-        cur_gray = cv2.resize(cur_gray, gray_size)
-        if prv_gray is not None:
-            flow = cv2.calcOpticalFlowFarneback(prv_gray, cur_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            mag, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
-            mag = (255.0*(mag-mag.min())/max(float(mag.max()-mag.min()), 1)).astype(np.uint8)
-            mag = cv2.resize(mag, (frame.shape[1], frame.shape[0]))
-        else:
-            mag = np.zeros((frame.shape[0], frame.shape[1]), dtype=np.uint8)
-        prv_gray = cur_gray
-        motion_mags.append(mag)
-    return motion_mags
+    i = 0
+    while i < len(bboxes):
+        ret, frame = cap.read()
+        if not ret:
+            break
+        mag, prv_gray = motion_magnitude(prv_gray, frame)
+        for bbox in bboxes[i]:
+            x0, y0, x1, y1 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+            bbox.append(mag[max(y0, 0): y1, max(x0, 0): x1].mean())
+        i += 1
+    cap.release()
+    if i != len(bboxes):
+        raise ValueError(f"Frame count mismatch in flow pass: {i} vs {len(bboxes)}")
 
 
 def get_iou(boxA, boxB):
@@ -97,7 +112,8 @@ def get_iou(boxA, boxB):
     return iou
 
 
-def find_target_bbox(bbox_arr, opts, iou_thr=0.5, len_ratio_thr=0.5):
+def find_target_bbox(bbox_arr, n_frames, iou_thr=0.5, len_ratio_thr=0.5):
+    # Boxes are [x0, y0, x1, y1, motion]
     tubes = []
     num_rest = sum([len(x) for x in bbox_arr])
     while num_rest > 0:
@@ -117,21 +133,20 @@ def find_target_bbox(bbox_arr, opts, iou_thr=0.5, len_ratio_thr=0.5):
                 tube.append([i, target_bbox])
         tubes.append(tube)
         num_rest = sum([len(x) for x in bbox_arr])
-        
+
     max_val, max_tube = -1, None
     for itube, tube in enumerate(tubes):
         mean_val = 0
         for iframe, bbox in tube:
-            x0, y0, x1, y1 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
-            mean_val += opts[iframe][max(y0, 0): y1, max(x0, 0): x1].mean()
+            mean_val += bbox[4]
         mean_val /= len(tube)
-        
-        if len(tube)/len(opts) > len_ratio_thr:
+
+        if len(tube)/n_frames > len_ratio_thr:
             if mean_val > max_val:
                 max_val, max_tube = mean_val, tube
-                
+
     if max_tube is not None:
-        target_bbox = np.array([bbox[1] for bbox in max_tube]).mean(axis=0).tolist()
+        target_bbox = np.array([bbox[1][:4] for bbox in max_tube]).mean(axis=0).tolist()
     else:
         target_bbox = None
     return target_bbox, tubes
@@ -139,7 +154,7 @@ def find_target_bbox(bbox_arr, opts, iou_thr=0.5, len_ratio_thr=0.5):
 
 def crop_clip(video_path, problem_file_path, crop_clip_path, yolo_model_path):
     try:
-        # Given a video file which is a single clip, crop the clip to the bouding box of the signer    
+        # Given a video file which is a single clip, crop the clip to the bouding box of the signer
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -147,27 +162,27 @@ def crop_clip(video_path, problem_file_path, crop_clip_path, yolo_model_path):
 
         #new_width, new_height = long_side_rescale(640, width, height)
         new_width, new_height = width, height
-        
+
         fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-        
+
         up_exp, down_exp, left_exp, right_exp = 0.01, 0.01, 0.3, 0.3
-        
-        
-        model = YOLO(yolo_model_path)    
-        
+
+
+        model = YOLO(yolo_model_path)
+
+        # Pass 1: detection only, no frames kept in memory
         bboxes = []
-        frames = []
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
-            
+
             # Convert BGR to RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
+
             # Run YOLOv8 inference
             results = model(frame_rgb)
-            
+
             # Filter for person class (class 0 in COCO dataset)
             person_bboxes = []
             for r in results:
@@ -175,33 +190,31 @@ def crop_clip(video_path, problem_file_path, crop_clip_path, yolo_model_path):
                     if box.cls == 0:  # person class
                         x1, y1, x2, y2 = box.xyxy[0].tolist()
                         person_bboxes.append([x1, y1, x2, y2])
-            
+
             bboxes.append(person_bboxes)
-            frames.append(frame)
-        
-        if len(frames) == 0:
+        cap.release()
+
+        n_frames = len(bboxes)
+        if n_frames == 0:
             return
-                
-            
+
+
         for i in range(len(bboxes)):
             for j in range(len(bboxes[i])):
                 x0, y0, x1, y1 = bboxes[i][j]
                 w, h = x1-x0+1, y1-y0+1
                 x0, y0, x1, y1 = x0-w*left_exp, y0-h*up_exp, x1+w*right_exp, y1+h*down_exp
                 bboxes[i][j] = [x0, y0, x1, y1]
-        
-        # try:
+
         if max([len(x) for x in bboxes]) == 1:
             bboxes = list(filter(lambda x: len(x) == 1, bboxes))
             bbox = np.array(bboxes).mean(axis=0)[0].tolist()
             tubes = []
         else:
-            opts = get_optical_flow(frames)
-            bbox, tubes = find_target_bbox(bboxes, opts)
-        # except:
-        #     bbox = None
-        #     tubes = []
-            
+            # Pass 2: optical flow, only when several persons are detected
+            add_box_motions(video_path, bboxes)
+            bbox, tubes = find_target_bbox(bboxes, n_frames)
+
         if bbox is None and len(tubes) > 0:
             if max([len(x) for x in tubes]) > 0:
                 total_sizes = []
@@ -210,35 +223,40 @@ def crop_clip(video_path, problem_file_path, crop_clip_path, yolo_model_path):
                     total_sizes.append(total_size)
                 idx = np.array(total_sizes).argmax()
                 bbox = np.array([x for _, x in tubes[idx]]).mean(axis=0).tolist()
-        
+
         if bbox is not None:
             x_0 = int(max(bbox[0], 0))
             y_0 = int(max(bbox[1], 0))
             x_1 = int(min(bbox[2], new_width))
             y_1 = int(min(bbox[3], new_height))
-            
-            for i in range(len(frames)):
-                frames[i] = frames[i][y_0:y_1, x_0:x_1]
-        # max_size = max(frames[0].shape[0], frames[0].shape[1])
-        # clip_width, clip_height = short_side_rescale(max_size, frames[0].shape[1], frames[0].shape[0])
-        
-        clip_width, clip_height = frames[0].shape[1], frames[0].shape[0]
-        resized_clip = cv2.VideoWriter(
-            crop_clip_path,
-            fourcc, fps, (clip_width, clip_height),
-        )
-        for frame in frames:
-            # frame = cv2.resize(frame, (clip_width, clip_height))
+
+        # Last pass: crop and write frame by frame
+        cap = cv2.VideoCapture(video_path)
+        resized_clip = None
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if bbox is not None:
+                frame = frame[y_0:y_1, x_0:x_1]
+            if resized_clip is None:
+                clip_width, clip_height = frame.shape[1], frame.shape[0]
+                resized_clip = cv2.VideoWriter(
+                    crop_clip_path,
+                    fourcc, fps, (clip_width, clip_height),
+                )
             resized_clip.write(frame)
-        resized_clip.release()
+        cap.release()
+        if resized_clip is not None:
+            resized_clip.release()
 
 
-        
+
     except Exception as e:
         with open(problem_file_path, "a") as f:
             f.write(f"{video_path}: {e}\n")
         # pass
-        
+
 
 
 
@@ -258,9 +276,9 @@ if __name__ == "__main__":
                         help='path to the problem file path')
     parser.add_argument('--yolo_model_path', type=str, required=True,
                         help='path to the yolo model')
-    
+
     args = parser.parse_args()
-    
+
     index = args.index
     batch_size = args.batch_size
     # time_limit = args.time_limit
@@ -270,20 +288,20 @@ if __name__ == "__main__":
     yolo_model_path = args.yolo_model_path
     fixed_list = load_file(files_list)
     output_path = f"{output_clips_directory}/"
- 
-    
+
+
     start_time = time.time()
-    
+
     video_batches = [fixed_list[i:i + batch_size] for i in range(0, len(fixed_list), batch_size)]
     print(f"length of video_batches: {len(video_batches[0])}")
     for video_file in video_batches[index]:
         crop_clip_path = f"{output_path}{Path(video_file).stem}.mp4"
         Path(output_path).mkdir(parents=True, exist_ok=True)
-        
+
         current_time = time.time()
         # if current_time - start_time > time_limit:
         #     print("Time limit of 7 hours and 40 minutes reached. Stopping execution.")
-        #     break    
+        #     break
 
 
         if os.path.exists(crop_clip_path):
@@ -293,5 +311,5 @@ if __name__ == "__main__":
             print(f"Skipping {video_file} - problem file already exists")
             continue
         else:
-            print(f"Processing {video_file}")        
+            print(f"Processing {video_file}")
             crop_clip(video_file, problem_file_path, crop_clip_path, yolo_model_path)

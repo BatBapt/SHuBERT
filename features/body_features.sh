@@ -14,8 +14,8 @@ case "$MODE" in
         POSE_PATH=/hpchome/baptiste26/data/RUV/L1_signers/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/body_features
         FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/body_features/body_features.list
-        N_JOBS=3
-        BATCH_SIZE=20
+        N_JOBS=50
+        BATCH_SIZE=2
         ;;
     *)
         echo "Usage: $0 {news|L1}"

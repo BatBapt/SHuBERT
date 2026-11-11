@@ -16,7 +16,7 @@ export WORLD_SIZE=${SLURM_NTASKS:-1}
 REPO=/hpchome/baptiste26/my_code/SHuBERT
 CONFIG_DIR=$REPO/fairseq/examples/shubert/config
 CONFIG_NAME=isl_adapt
-LOG_DIR=$REPO/run_2
+LOG_DIR=$REPO/run_3
 
 mkdir -p $LOG_DIR
 cd $REPO/fairseq

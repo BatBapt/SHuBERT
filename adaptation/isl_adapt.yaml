@@ -13,7 +13,8 @@ checkpoint:
   reset_lr_scheduler: true
   reset_dataloader: true
   reset_meters: true
-  save_interval_updates: 200
+  save_interval: 100000
+  save_interval_updates: 400
   keep_interval_updates: -1
   no_epoch_checkpoints: true
   load_checkpoint_on_all_dp_ranks: true
@@ -46,7 +47,7 @@ criterion:
   _name: model
 
 optimization:
-  max_update: 2000
+  max_update: 4000
   lr: [0.00005]
 
 optimizer:

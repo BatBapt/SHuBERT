@@ -17,6 +17,13 @@ case "$MODE" in
         N_JOBS=50
         BATCH_SIZE=2
         ;;
+    ITM)
+        POSE_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe
+        MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/body_features
+        FILE_LIST=/hpchome/baptiste26/data/signwiki/itm_shubert/body_features/body_features.list
+        N_JOBS=93
+        BATCH_SIZE=20
+        ;;
     *)
         echo "Usage: $0 {news|L1}"
         exit 1
@@ -34,7 +41,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 #!/bin/bash
 #SBATCH --job-name=body_features_$i
 #SBATCH --partition=48cpu_192mem
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=20
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_body_features_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_body_features_%x.err
 

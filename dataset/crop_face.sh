@@ -18,7 +18,7 @@ case "$MODE" in
         BATCH_SIZE=2
         ;;
     ITM)
-        INPUT_DIR=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe
+        POSE_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe
         MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/cropped_face
         FILE_LIST=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe/cropped.list
         N_JOBS=93

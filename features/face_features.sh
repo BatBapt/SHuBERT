@@ -13,6 +13,11 @@ case "$MODE" in
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/face_dino
         FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/face_dino/face_features.list
         ;;
+    ITM)
+        POSE_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/cropped_face
+        MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/face_dino
+        FILE_LIST=/hpchome/baptiste26/data/signwiki/itm_shubert/face_dino/face_features.list
+        ;;
     *)
         echo "Usage: $0 {news|L1}"
         exit 1

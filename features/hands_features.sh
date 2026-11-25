@@ -13,8 +13,13 @@ case "$MODE" in
         MAIN_PATH=/hpchome/baptiste26/data/RUV/L1_signers/hands_dino
         FILE_LIST=/hpchome/baptiste26/data/RUV/L1_signers/hands_dino/hands_features.list
         ;;
+    ITM)
+        POSE_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/cropped_hands
+        MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/hands_dino
+        FILE_LIST=/hpchome/baptiste26/data/signwiki/itm_shubert/hands_dino/hands_features.list
+        ;;
     *)
-        echo "Usage: $0 {news|L1}"
+        echo "Usage: $0 {news|L1|ITM}"
         exit 1
         ;;
 esac

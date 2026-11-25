@@ -25,7 +25,7 @@ case "$MODE" in
         BATCH_SIZE=20
         ;;
     *)
-        echo "Usage: $0 {news|L1}"
+        echo "Usage: $0 {news|L1|ITM}"
         exit 1
         ;;
 esac

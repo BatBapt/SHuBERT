@@ -19,7 +19,7 @@ case "$MODE" in
         FILE_LIST=/hpchome/baptiste26/data/signwiki/itm_shubert/face_dino/face_features.list
         ;;
     *)
-        echo "Usage: $0 {news|L1}"
+        echo "Usage: $0 {news|L1|ITM}"
         exit 1
         ;;
 esac

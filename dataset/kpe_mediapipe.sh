@@ -15,8 +15,14 @@ case "$MODE" in
         N_JOBS=50
         BATCH_SIZE=2
         ;;
+    ITM)
+        INPUT_DIR=/hpchome/baptiste26/data/signwiki/itm_signwiki/videos/
+        MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe
+        N_JOBS=90
+        BATCH_SIZE=20
+        ;;
     *)
-        echo "Usage: $0 {news|L1}"
+        echo "Usage: $0 {news|L1|ITM}"
         exit 1
         ;;
 esac
@@ -31,7 +37,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 #!/bin/bash
 #SBATCH --job-name=kpe_${MODE}_$i
 #SBATCH --partition=48cpu_192mem
-#SBATCH --cpus-per-task=$((2 * BATCH_SIZE))
+#SBATCH --cpus-per-task=20
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.err
 

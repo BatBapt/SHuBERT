@@ -37,7 +37,7 @@ for i in $(seq 0 $((N_JOBS - 1))); do
 #!/bin/bash
 #SBATCH --job-name=kpe_${MODE}_$i
 #SBATCH --partition=48cpu_192mem
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=$BATCH_SIZE
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_kp_%x.err
 

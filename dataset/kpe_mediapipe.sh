@@ -18,7 +18,7 @@ case "$MODE" in
     ITM)
         INPUT_DIR=/hpchome/baptiste26/data/signwiki/itm_signwiki/videos/
         MAIN_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/mediapipe
-        N_JOBS=90
+        N_JOBS=93
         BATCH_SIZE=20
         ;;
     *)

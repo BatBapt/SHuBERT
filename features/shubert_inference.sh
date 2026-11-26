@@ -4,13 +4,13 @@ MODE=$1
 
 case "$MODE" in
     news)
-        DATA_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT/
+        DATA_PATH=/hpchome/baptiste26/data/RUV/news/SHuBERT
         ;;
     L1)
-        DATA_PATH=/hpchome/baptiste26/data/RUV/L1_signers/
+        DATA_PATH=/hpchome/baptiste26/data/RUV/L1_signers
         ;;
     ITM)
-        DATA_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/
+        DATA_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert
         ;;
     *)
         echo "Usage: $0 {news|L1|ITM}"

@@ -9,8 +9,11 @@ case "$MODE" in
     L1)
         DATA_PATH=/hpchome/baptiste26/data/RUV/L1_signers/
         ;;
+    ITM)
+        DATA_PATH=/hpchome/baptiste26/data/signwiki/itm_shubert/
+        ;;
     *)
-        echo "Usage: $0 {news|L1}"
+        echo "Usage: $0 {news|L1|ITM}"
         exit 1
         ;;
 esac
@@ -24,7 +27,7 @@ for i in {0..0}; do
 #SBATCH --partition=gpu-1xA100
 #SBATCH --output=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_shubert_inference_%x.out
 #SBATCH --error=/hpchome/baptiste26/my_code/SHuBERT/logs/slurm_shubert_inference_%x.err
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 
 source ~/.bashrc
 conda activate shubert_train_env
